@@ -47,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F301419C25FC1FAA005DDE6D /* 15-draw_cube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "15-draw_cube.cpp"; sourceTree = "<group>"; };
 		F303C2CF25F823EF00E66484 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		F303C2DE25F853E500E66484 /* FullScreenChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullScreenChart.swift; sourceTree = "<group>"; };
 		F303C2EC25F8585200E66484 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -87,7 +88,6 @@
 		F3FDECF225F6BBB5008478D6 /* red.ppm */ = {isa = PBXFileReference; lastKnownFileType = file; path = red.ppm; sourceTree = "<group>"; };
 		F3FDECF325F6BBB5008478D6 /* logo-256x256.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-256x256.png"; sourceTree = "<group>"; };
 		F3FDED3725F6C9E2008478D6 /* Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Prefix.pch; sourceTree = "<group>"; };
-		F3FDED4A25F6E24A008478D6 /* 15-draw_cube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "15-draw_cube.cpp"; path = "../../../cpp/shared/15-draw_cube.cpp"; sourceTree = "<group>"; };
 		F3FDED7B25F6EA87008478D6 /* test.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = test.mm; sourceTree = "<group>"; };
 		F3FDED8325F6EA98008478D6 /* test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = test.h; sourceTree = "<group>"; };
 		F3FDED8A25F6ED15008478D6 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
@@ -120,6 +120,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F301419825FC1F59005DDE6D /* 15-draw_cube */ = {
+			isa = PBXGroup;
+			children = (
+				F301419C25FC1FAA005DDE6D /* 15-draw_cube.cpp */,
+			);
+			name = "15-draw_cube";
+			path = "../../../cpp/shared/15-draw_cube";
+			sourceTree = "<group>";
+		};
 		F303C2CE25F823C700E66484 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -153,6 +162,7 @@
 		F331BEC425ED3CB300C1A62E /* HelloTriangle */ = {
 			isa = PBXGroup;
 			children = (
+				F301419825FC1F59005DDE6D /* 15-draw_cube */,
 				F3B8898525FA795C006CAB84 /* HelloTriangle.entitlements */,
 				F3B8896A25FA770B006CAB84 /* SampleFiles */,
 				F303C2DE25F853E500E66484 /* FullScreenChart.swift */,
@@ -160,7 +170,6 @@
 				F38B27DB25F1E7A100A9001C /* HelloTriangle-Bridging-Header.h */,
 				F38B27DC25F1E7A100A9001C /* wrapperplain.cpp */,
 				F3FDED9225F6F5AF008478D6 /* Samples.h */,
-				F3FDED4A25F6E24A008478D6 /* 15-draw_cube.cpp */,
 				F3FDED8325F6EA98008478D6 /* test.h */,
 				F3FDED7B25F6EA87008478D6 /* test.mm */,
 				F3FDED3725F6C9E2008478D6 /* Prefix.pch */,

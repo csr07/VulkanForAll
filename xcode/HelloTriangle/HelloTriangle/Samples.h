@@ -49,7 +49,7 @@
 #ifdef MVK_SAMP_15_draw_cube
 #	define _5_draw_cube_vert __draw_cube_vert
 #	define _5_draw_cube_frag __draw_cube_frag
-#	include "../../../cpp/shared/15-draw_cube.cpp"
+#	include "../../../cpp/shared/15-draw_cube/15-draw_cube.cpp"
 #endif
 
 /*#ifdef MVK_SAMP_copy_blit_image

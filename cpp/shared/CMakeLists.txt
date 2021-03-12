@@ -55,7 +55,7 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             15-draw_cube.cpp
+             ${CMAKE_SOURCE_DIR}/15-draw_cube/15-draw_cube.cpp
              ${CMAKE_SOURCE_DIR}/../android/vulkan_wrapper/vulkan_wrapper.cpp
             )
 
