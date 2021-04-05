@@ -38,12 +38,19 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable true
+            jniDebuggable true
+        }
+        debug {
+            jniDebuggable true
+            debuggable true
         }
     }
     externalNativeBuild {
         cmake {
+            path "src/main/cpp/CMakeLists.txt"
             //CSR modified path to new CMakeLists.txt        <---------START of Build Process
-            path "../../cpp/shared/CMakeLists.txt"
+            //path "../../cpp/shared/CMakeLists.txt"
             version "3.10.2"
         }
     }
