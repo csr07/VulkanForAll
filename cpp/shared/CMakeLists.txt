@@ -53,7 +53,7 @@ add_library( # Sets the name of the library.
 
 #            ${CMAKE_SOURCE_DIR}/../android/vulkan_wrapper/vulkan_wrapper.cpp
             ${CMAKE_SOURCE_DIR}/007-draw_test/main.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../externals/vk-bootstrap/VkBootstrap.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../externals/vk-bootstrap/src/VkBootstrap.cpp
             )
 
 #CSR added from template
