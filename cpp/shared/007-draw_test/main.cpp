@@ -11,7 +11,7 @@
 #include <VkBootstrap.h>
 
 static ANativeWindow* natWin = {0};
-static jobject globalSurfaceView = nullptr;
+static jobject globalSurface = nullptr;
 
 static int32_t width = {640};
 static int32_t height = {480};
@@ -90,15 +90,15 @@ Java_com_csr_hellotriangle_MainActivity_stringFromJNI( JNIEnv* env, jobject /* t
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_csr_hellotriangle_MainActivity_passSurfaceViewJNI( JNIEnv* env,
+Java_com_csr_hellotriangle_MainActivity_passSurfaceJNI( JNIEnv* env,
                                                             jobject obj,
-                                                            jobject surfaceView ){
+                                                            jobject tsurface ){
 
-    globalSurfaceView = env->NewGlobalRef(surfaceView);
-    natWin = ANativeWindow_fromSurface(env, globalSurfaceView);
+    globalSurface = env->NewGlobalRef(tsurface);
+    natWin = ANativeWindow_fromSurface(env, globalSurface);
 
     AndroidGetWindowSize();
-    //ANativeWindow_release(natWin);
+    ANativeWindow_release(natWin);
     return;
 }
 
@@ -106,12 +106,11 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_csr_hellotriangle_MainActivity_initVolk(JNIEnv* env, jobject){
 
     VkResult res = volkInitialize();
-    if(!res){
+    if(res != VK_SUCCESS){
         std::printf("Vulkan loader not installed on the system");
     }
 
     init_vulkan();
-
 }
 
 
