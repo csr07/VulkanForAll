@@ -48,9 +48,9 @@ android {
     }
     externalNativeBuild {
         cmake {
-            path "src/main/cpp/CMakeLists.txt"
+            //path "src/main/cpp/CMakeLists.txt"
             //CSR modified path to new CMakeLists.txt        <---------START of Build Process
-            //path "../../cpp/shared/CMakeLists.txt"
+            path "../../cpp/shared/CMakeLists.txt"
             version "3.10.2"
         }
     }

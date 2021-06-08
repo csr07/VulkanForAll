@@ -19,17 +19,14 @@ project("hellotriangle")
 
 
 # Build Util Lib
-set(UTILS_NAME  vsamputils)
-get_filename_component(PROJECT_SOURCE_DIR
-                       "${CMAKE_SOURCE_DIR}/../../.."
-                       ABSOLUTE)
-get_filename_component(GLMINC_PREFIX
-                       "${CMAKE_SOURCE_DIR}/utils"
-                       ABSOLUTE)
-add_subdirectory(${CMAKE_SOURCE_DIR}/utils ${CMAKE_BINARY_DIR}/utils)
-
-
-
+#set(UTILS_NAME  vsamputils)
+#get_filename_component(PROJECT_SOURCE_DIR
+#                       "${CMAKE_SOURCE_DIR}/../../.."
+#                       ABSOLUTE)
+#get_filename_component(GLMINC_PREFIX
+#                       "${CMAKE_SOURCE_DIR}/utils"
+#                       ABSOLUTE)
+#add_subdirectory(${CMAKE_SOURCE_DIR}/utils ${CMAKE_BINARY_DIR}/utils)
 
 
 # Build application's shared lib
@@ -37,11 +34,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11  -Werror -D VK_USE_PLATFORM_A
 
 # Force export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.
-set(CMAKE_SHARED_LINKER_FLAGS
-    "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
-
-
-
+#set(CMAKE_SHARED_LINKER_FLAGS
+#    "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -55,17 +49,23 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             ${CMAKE_SOURCE_DIR}/15-draw_cube/15-draw_cube.cpp
-             ${CMAKE_SOURCE_DIR}/../android/vulkan_wrapper/vulkan_wrapper.cpp
+#             ${CMAKE_SOURCE_DIR}/15-draw_cube/15-draw_cube.cpp
+
+#            ${CMAKE_SOURCE_DIR}/../android/vulkan_wrapper/vulkan_wrapper.cpp
+            ${CMAKE_SOURCE_DIR}/007-draw_test/main.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../externals/vk-bootstrap/VkBootstrap.cpp
             )
 
 #CSR added from template
 target_include_directories(vulkan_sample PRIVATE
-                           ${CMAKE_SOURCE_DIR}/data
-                           ${GLMINC_PREFIX}
-                           ${CMAKE_CURRENT_SOURCE_DIR}/../../externals
-                           ${CMAKE_SOURCE_DIR}/../../ShaderHeadersAndroid
-                           ${CMAKE_SOURCE_DIR}/../android/vulkan_wrapper)
+#                           ${CMAKE_SOURCE_DIR}/data
+#                           ${GLMINC_PREFIX}
+                           #${CMAKE_CURRENT_SOURCE_DIR}/../../externals
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../../externals/Vulkan-Headers/include
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../../externals/volk
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../../externals/vk-bootstrap/src
+                           ${CMAKE_SOURCE_DIR}/../../ShaderHeadersAndroid)
+#                           ${CMAKE_SOURCE_DIR}/../android/vulkan_wrapper)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -90,4 +90,5 @@ target_link_libraries( # Specifies the target library.
                        # Links the target library to the log library
                        # included in the NDK.
                        ${log-lib}
-                       ${UTILS_NAME} )
+                        android)
+#                       ${UTILS_NAME} )

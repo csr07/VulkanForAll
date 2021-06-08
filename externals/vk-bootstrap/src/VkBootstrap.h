@@ -21,7 +21,20 @@
 #include <vector>
 #include <system_error>
 
-#include <vulkan/vulkan.h>
+#define LOG_TAG "VkEngine"
+#if defined(__APPLE__)
+    #include <iostream>
+    #define  LOGI(...) printf(__VA_ARGS__); std::cout << std::endl
+    #define  LOGE(...)  printf(__VA_ARGS__); std::cerr << std::endl
+#elif defined(ANDROID) || defined(__ANDROID_API__)
+	#include <android/log.h>
+	#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+	#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+	#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
+#endif
+
+//#include <vulkan/vulkan.h>
+#include "../volk/volk.h"
 
 
 namespace vkb {
@@ -31,6 +44,15 @@ namespace detail {
 struct Error {
 	std::error_code type;
 	VkResult vk_result = VK_SUCCESS; // optional error value if a vulkan call failed
+
+	Error(std::error_code ec){
+	    type = ec;
+	}
+
+	Error(std::error_code ec, VkResult r){
+		type = ec;
+		vk_result = r;
+	}
 };
 
 template <typename T> class Result {
@@ -203,6 +225,7 @@ struct SystemInfo {
 	std::vector<VkExtensionProperties> available_extensions;
 	bool validation_layers_available = false;
 	bool debug_utils_available = false;
+	bool debug_report_available = true;
 };
 
 
@@ -212,6 +235,7 @@ class PhysicalDeviceSelector;
 struct Instance {
 	VkInstance instance = VK_NULL_HANDLE;
 	VkDebugUtilsMessengerEXT debug_messenger = VK_NULL_HANDLE;
+	VkDebugReportCallbackEXT debug_report_messenger = VK_NULL_HANDLE;
 	VkAllocationCallbacks* allocation_callbacks = VK_NULL_HANDLE;
 
 	PFN_vkGetInstanceProcAddr fp_vkGetInstanceProcAddr = nullptr;
@@ -307,6 +331,7 @@ class InstanceBuilder {
 		std::vector<VkBaseOutStructure*> pNext_elements;
 
 		// debug callback
+		PFN_vkDebugReportCallbackEXT debug_report_callback = nullptr;
 		PFN_vkDebugUtilsMessengerCallbackEXT debug_callback = nullptr;
 		VkDebugUtilsMessageSeverityFlagsEXT debug_message_severity =
 		    VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;

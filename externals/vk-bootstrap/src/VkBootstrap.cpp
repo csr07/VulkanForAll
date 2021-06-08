@@ -267,6 +267,30 @@ const char* to_string_message_type(VkDebugUtilsMessageTypeFlagsEXT s) {
 	return "Unknown";
 }
 
+VkResult create_debug_report_messenger(VkInstance instance,
+		PFN_vkDebugReportCallbackEXT debug_report_callback,
+		VkDebugReportCallbackEXT *pDebugReportMsg,
+		VkAllocationCallbacks *allocation_callbacks) {
+	VkDebugReportCallbackCreateInfoEXT dbgReportCreateInfo = {};
+	dbgReportCreateInfo.sType	= VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+	dbgReportCreateInfo.pfnCallback = debug_report_callback;
+	dbgReportCreateInfo.pUserData  = NULL;
+	dbgReportCreateInfo.pNext	   = NULL;
+	dbgReportCreateInfo.flags	   =
+			VK_DEBUG_REPORT_WARNING_BIT_EXT |
+			VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+			VK_DEBUG_REPORT_ERROR_BIT_EXT |
+			VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+
+	PFN_vkCreateDebugReportCallbackEXT createMessengerFunc;
+	detail::vulkan_functions().get_inst_proc_addr(createMessengerFunc, "vkCreateDebugReportCallbackEXT");
+	if (createMessengerFunc) {
+	    return createMessengerFunc(instance, &dbgReportCreateInfo, allocation_callbacks, pDebugReportMsg);
+	} else {
+		return VK_ERROR_EXTENSION_NOT_PRESENT;
+	}
+}
+
 VkResult create_debug_utils_messenger(VkInstance instance,
     PFN_vkDebugUtilsMessengerCallbackEXT debug_callback,
     VkDebugUtilsMessageSeverityFlagsEXT severity,
@@ -310,9 +334,33 @@ VKAPI_ATTR VkBool32 VKAPI_CALL default_debug_callback(VkDebugUtilsMessageSeverit
 	auto ms = to_string_message_severity(messageSeverity);
 	auto mt = to_string_message_type(messageType);
 	printf("[%s: %s]\n%s\n", ms, mt, pCallbackData->pMessage);
+	LOGI("[%s: %s]\n%s\n", ms, mt, pCallbackData->pMessage);
 
 	return VK_FALSE;
 }
+
+VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_function( VkFlags msgFlags,
+										VkDebugReportObjectTypeEXT objType, uint64_t srcObject,
+										size_t location, int32_t msgCode, const char *pLayerPrefix,
+										const char *pMsg, void *pUserData){
+	if (msgFlags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+		LOGE("[ERR] Code: %d %s", msgCode, pMsg);
+	} else if (msgFlags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+		LOGE("[WRN] Code: %d %s", msgCode, pMsg);
+	} else if (msgFlags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+		LOGI("[INF] Code: %d %s", msgCode, pMsg);
+	} else if(msgFlags& VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT){
+		LOGI("[PWRN] Code: %d %s", msgCode, pMsg);
+	} else if (msgFlags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+		LOGD("[DBG] Code: %d %s", msgCode, pMsg);
+	} else {
+		return VK_FALSE;
+	}
+
+	return VK_SUCCESS;
+}
+
+
 
 namespace detail {
 bool check_layer_supported(std::vector<VkLayerProperties> const& available_layers, const char* layer_name) {
@@ -532,9 +580,12 @@ SystemInfo::SystemInfo() {
 		this->available_extensions.clear();
 	}
 
-	for (auto& ext : this->available_extensions)
+	for (auto& ext : this->available_extensions) {
 		if (strcmp(ext.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
 			debug_utils_available = true;
+		if (strcmp(ext.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0)
+			debug_report_available = true;
+	}
 
 	for (auto& layer : this->available_layers) {
 		std::vector<VkExtensionProperties> layer_extensions;
@@ -542,9 +593,12 @@ SystemInfo::SystemInfo() {
 		    detail::vulkan_functions().fp_vkEnumerateInstanceExtensionProperties,
 		    layer.layerName);
 		if (layer_extensions_ret != VK_SUCCESS) {
-			for (auto& ext : layer_extensions)
+			for (auto& ext : layer_extensions) {
 				if (strcmp(ext.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
 					debug_utils_available = true;
+				if (strcmp(ext.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0)
+					debug_report_available = true;
+			}
 		}
 	}
 }
@@ -623,6 +677,9 @@ detail::Result<Instance> InstanceBuilder::build() const {
 	if (info.debug_callback != nullptr && system.debug_utils_available) {
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
+    else if (info.debug_report_callback != nullptr && system.debug_report_available) {
+        extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+    }
 
 	if (!info.headless_context) {
 		auto check_add_window_ext = [&](const char* name) -> bool {
@@ -668,13 +725,27 @@ detail::Result<Instance> InstanceBuilder::build() const {
 	std::vector<VkBaseOutStructure*> pNext_chain;
 
 	VkDebugUtilsMessengerCreateInfoEXT messengerCreateInfo = {};
+	VkDebugReportCallbackCreateInfoEXT messengerReportCreateInfo = {};
 	if (info.use_debug_messenger) {
-		messengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-		messengerCreateInfo.pNext = nullptr;
-		messengerCreateInfo.messageSeverity = info.debug_message_severity;
-		messengerCreateInfo.messageType = info.debug_message_type;
-		messengerCreateInfo.pfnUserCallback = info.debug_callback;
-		pNext_chain.push_back(reinterpret_cast<VkBaseOutStructure*>(&messengerCreateInfo));
+		if (info.debug_callback) {
+			messengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+			messengerCreateInfo.pNext = nullptr;
+			messengerCreateInfo.messageSeverity = info.debug_message_severity;
+			messengerCreateInfo.messageType = info.debug_message_type;
+			messengerCreateInfo.pfnUserCallback = info.debug_callback;
+			pNext_chain.push_back(reinterpret_cast<VkBaseOutStructure*>(&messengerCreateInfo));
+		} else {
+			messengerReportCreateInfo.sType	= VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+			messengerReportCreateInfo.pfnCallback = info.debug_report_callback;
+			messengerReportCreateInfo.pUserData  = NULL;
+			messengerReportCreateInfo.pNext	   = NULL;
+			messengerReportCreateInfo.flags	   =
+					VK_DEBUG_REPORT_WARNING_BIT_EXT |
+					VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+					VK_DEBUG_REPORT_ERROR_BIT_EXT |
+					VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+			pNext_chain.push_back(reinterpret_cast<VkBaseOutStructure*>(&messengerReportCreateInfo));
+		}
 	}
 
 	VkValidationFeaturesEXT features{};
@@ -721,14 +792,25 @@ detail::Result<Instance> InstanceBuilder::build() const {
 	detail::vulkan_functions().init_instance_funcs(instance.instance);
 
 	if (info.use_debug_messenger) {
-		res = create_debug_utils_messenger(instance.instance,
-		    info.debug_callback,
-		    info.debug_message_severity,
-		    info.debug_message_type,
-		    &instance.debug_messenger,
-		    info.allocation_callbacks);
-		if (res != VK_SUCCESS) {
-			return detail::Result<Instance>(InstanceError::failed_create_debug_messenger, res);
+		if (info.debug_callback) {
+			res = create_debug_utils_messenger(instance.instance,
+											   info.debug_callback,
+											   info.debug_message_severity,
+											   info.debug_message_type,
+											   &instance.debug_messenger,
+											   info.allocation_callbacks);
+			if (res != VK_SUCCESS) {
+				return detail::Result<Instance>(InstanceError::failed_create_debug_messenger, res);
+			}
+		} else {
+		    res = create_debug_report_messenger(instance.instance,
+		    		info.debug_report_callback,
+		    		&instance.debug_report_messenger,
+		    		info.allocation_callbacks);
+
+		    if (res != VK_SUCCESS) {
+				return detail::Result<Instance>(InstanceError::failed_create_debug_messenger, res);
+		    }
 		}
 	}
 
@@ -787,7 +869,27 @@ InstanceBuilder& InstanceBuilder::request_validation_layers(bool enable_validati
 }
 InstanceBuilder& InstanceBuilder::use_default_debug_messenger() {
 	info.use_debug_messenger = true;
-	info.debug_callback = default_debug_callback;
+
+	uint32_t inst_ext_count = 0;
+	vkEnumerateInstanceExtensionProperties(nullptr, &inst_ext_count, nullptr);
+
+	VkExtensionProperties* inst_exts =
+			(VkExtensionProperties *)malloc(inst_ext_count * sizeof(VkExtensionProperties));
+	vkEnumerateInstanceExtensionProperties(nullptr, &inst_ext_count, inst_exts);
+
+	for (uint32_t i = 0; i < inst_ext_count; i++) {
+		if (strcmp(inst_exts[i].extensionName,
+				   VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0) {
+			info.debug_callback = default_debug_callback;
+			break;
+		} else if (strcmp(inst_exts[i].extensionName,
+				   VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0) {
+			info.debug_report_callback = debug_report_function;
+			break;
+		}
+	}
+	free(inst_exts);
+
 	return *this;
 }
 InstanceBuilder& InstanceBuilder::set_debug_callback(PFN_vkDebugUtilsMessengerCallbackEXT callback) {

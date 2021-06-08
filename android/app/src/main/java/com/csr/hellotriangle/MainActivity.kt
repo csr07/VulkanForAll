@@ -39,6 +39,8 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     override fun surfaceCreated(holder: SurfaceHolder) {
         print("Surface Created!")
         surfaceHolder?.surface?.let { passSurfaceViewJNI(it) }
+
+        initVolk()
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -55,11 +57,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
      */
     external fun stringFromJNI(): String
     external fun passSurfaceViewJNI(mySurface: Surface)
+    external fun initVolk()
 
     companion object {
         // Used to load the 'native-lib' library on application startup.
         init {
-            System.loadLibrary("native-lib")
+            //System.loadLibrary("native-lib")
+            System.loadLibrary("vulkan_sample")
         }
     }
 }
